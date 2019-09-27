@@ -1,0 +1,91 @@
+pragma solidity 0.4.24;
+
+contract TrashCoin {
+    address public minter;
+    mapping (address => uint) public balances;
+    string public symbol='TRS';
+    string public name='Trash Token';
+    
+    //16 tokens provided per wei
+    uint256 public rate = 16*10^18;
+    address public owner;
+
+    //event transferTrashCoin(address from, address to, uint trashValue);
+    event mintNewTokens(address to, uint256 trashValue, uint256 trashcoinsupply);
+    
+    //Hard coded values of trash. All values are in cents.
+    uint256 public canAValue = 30;
+    uint256 public canBValue = 35;
+    uint256 public bottleA = 8;
+    uint256 public bottleB = 12;
+    uint256 public largeBottleA = 21;
+    uint256 public largeBottleB = 32;
+    uint256 public cardBoardA = 5;
+    uint256 public cardBoardB = 75; 
+    uint256 public glassA = 20;
+    uint256 public glassB = 7;
+
+    uint256 public totalTrashCoinSupply;
+    //event Sent(address from, address to, uint amount);
+
+    constructor() public {
+        minter = msg.sender;
+    }
+
+    function mint(address receiver, uint amount) private {
+        require (msg.sender == minter);
+        balances[receiver] += amount;
+    }
+    
+    function verifyTrashValue(uint givenValue, uint trashType) private pure returns(bool){
+        if (givenValue == trashType){
+            return (true);
+        } else{
+            return (false);
+        }
+    }
+    
+    //Used exclusively for demo purposes. Used to associate a value with an inputted name;
+    function giveItemValue(uint256 identifier) private view returns(uint256) {
+        if (identifier==0) {
+            return(canAValue);
+        }
+        if (identifier==1) {
+            return(canBValue);
+        }
+        if (identifier==2) {
+            return(bottleA);
+        }
+        if (identifier==3) {
+            return(bottleB);
+        }
+        if (identifier==4) {
+            return(largeBottleA);
+        }
+        if (identifier==5) {
+            return(largeBottleB);
+        }
+        if (identifier==6) {
+            return(cardBoardA);
+        }
+        if (identifier==7) {
+            return(cardBoardB);
+        }
+        if (identifier==8) {
+            return(glassA);
+        }
+        if (identifier==9) {
+            return(glassB);
+        }
+    }
+    
+    function sellTrash(uint256 identifier, address receiver) external payable {
+        require (identifier>=0&&identifier<=9);//Requires that the given item is in range of indeces
+        
+        uint256 trashValue=giveItemValue(identifier);//Given the associated item value to item with that name
+        
+        mint(receiver, trashValue);
+        
+        emit mintNewTokens(msg.sender, trashValue, totalTrashCoinSupply);
+    }
+}
